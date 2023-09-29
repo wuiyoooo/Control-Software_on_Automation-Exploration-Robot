@@ -1,3 +1,5 @@
+#include <SoftwareSerial.h>
+
 //小车相关引脚
 #define ENB_R 5   
 #define ENA_R 10
@@ -42,6 +44,12 @@
 #define TOLERANCEFORWARD 15
 #define velocity 80 // 
 #define velocityLeftRight 80
+int status = 0; // 运动状态
+String info = "";
+//蓝牙相关
+#define RX_pin 0
+#define TX_pin 1
+SoftwareSerial BTSerial(RX_pin, TX_pin);
 void setup() {
   // put your setup code here, to run once:
   //车体
@@ -72,6 +80,7 @@ void setup() {
   pinMode(OUT_1, INPUT);
   //pinMode(OUT_2, INPUT);
   Serial.begin(9600);
+  BTSerial.begin(9600);
   //Mode Pin needs to be added
 }
 
@@ -82,30 +91,36 @@ void loop() {
   int distanceRight = refreshDevice(trigPin_3, echoPin_3);
   int collisionState_1 = digitalRead(OUT_1);
   int collisionState_2 = digitalRead(OUT_2);
-  Serial.println(distanceForward);
   move(FORWARD);
   if (collisionState_1 == LOW || collisionState_2 == LOW) {
-    Serial.println("Collision Detected!");  // 如果碰撞传感器检测到碰撞，向串口打印消息
+    //Serial.println("Collision Detected!");  // 如果碰撞传感器检测到碰撞，向串口打印消息
     move(STOP);
+    send(distanceForward, distanceLeft, distanceRight);
     delay(1000);
     move(BACKWARD);
+    send(distanceForward, distanceLeft, distanceRight);
     delay(100);
     move(STOP);
+    send(distanceForward, distanceLeft, distanceRight);
     delay(1000);
   }
   if (distanceForward < TOLERANCEFORWARD) {
     move(BACKWARD);
+    send(distanceForward, distanceLeft, distanceRight);
     delay(10);
     distanceLeft = refreshDevice(trigPin_2, echoPin_2);
     distanceRight = refreshDevice(trigPin_3, echoPin_3);
     distanceForward = refreshDevice(trigPin_1, echoPin_1);
     if (distanceLeft > distanceRight) {
       move(LEFT);
+      send(distanceForward, distanceLeft, distanceRight);
       delay(700);
     } else {
       move(RIGHT);
+      send(distanceForward, distanceLeft, distanceRight);
       delay(1000);
   }
+
 }
 
 }
@@ -122,6 +137,7 @@ void move(int state) {
       analogWrite(IN2_4_L, 0);
       analogWrite(ENA_R, 200);
       analogWrite(ENB_R, 200);
+      status = FORWARD;
       break;
     case BACKWARD:
       analogWrite(IN1_3_R, 0);
@@ -133,6 +149,7 @@ void move(int state) {
       analogWrite(IN2_4_L, velocity);
       analogWrite(ENA_L, 200);
       analogWrite(ENB_L, 200);
+      status = BACKWARD;
       break;
     case LEFT:
       //右轮正转
@@ -141,6 +158,7 @@ void move(int state) {
       //左轮反转
       digitalWrite(IN1_3_L, LOW);
       analogWrite(IN2_4_L, 100);
+      status = LEFT;
       break;
     case RIGHT:
       //右轮反转
@@ -149,6 +167,7 @@ void move(int state) {
       //左轮正转
       analogWrite(IN1_3_L, velocityLeftRight);
       digitalWrite(IN2_4_L, LOW);
+      status = RIGHT;
       break;
     case STOP:
       //两个轮都不转
@@ -160,6 +179,7 @@ void move(int state) {
       digitalWrite(IN2_4_L, LOW);
       analogWrite(ENA_L, 200);
       analogWrite(ENB_L, 200);
+      status = STOP;
       break;
   }
 }
@@ -171,6 +191,17 @@ int refreshDevice(int trigPin, int echoPin) {
   digitalWrite(trigPin, LOW);
   long duration = pulseIn(echoPin, HIGH);
   int distance = duration * 0.034 / 2;
-
   return distance;
+}
+void send(int distanceForward, int distanceLeft, int distanceRight) {
+  info = "";
+  info += status;
+  info += " ";
+  info += distanceForward;
+  info += " ";
+  info += distanceLeft;
+  info += " ";
+  info += distanceRight;
+  Serial.println(info);
+  BTSerial.write(info.c_str());
 }
