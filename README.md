@@ -1,6 +1,8 @@
 # Arduino_Automation_car
 BUPT 电信工程及管理 大二Design&Build小学期，题目如下：
 
+Hardware Model and Control Software:
+
 Design and build an automatic robot hardware that
 1. explores the walled maze;
 2. stops at the treasure inside the maze and takes picture(s)
