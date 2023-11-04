@@ -1,17 +1,50 @@
-# Arduino_Automation_car
-BUPT 电信工程及管理 大二Design&Build小学期，题目如下：
 
-Hardware Model and Control Software:
+# Arduino-Automation-car
+
+
+The handout for the project is:
 
 Design and build an automatic robot hardware that
-1. explores the walled maze;
-2. stops at the treasure inside the maze and takes picture(s)
+- explores the walled maze;
+- stops at the treasure inside the maze and takes picture(s)
 of the treasure;
-3. leaves the maze and returns to the starting position;
-4. records the exploration and stores information for other
+- leaves the maze and returns to the starting position;
+- records the exploration and stores information for other
 parts of the system;
 
-• Extra functions:
-1. explores a more complicated maze
+Extra functions:
+- explores a more complicated maze
 (e.g. larger maze, with multiple splits/branches).
-2. self-designed other functions.
+- self-designed other functions.
+## Hardware
+
+#### Power
+
+- Four wheels each with a motor
+- Every two motors on one side is
+controlled by one l298n
+- Each l298n connects to a same independent power source
+
+#### Sensor
+
+- Three kinds of sensors: ultrasonic sensor, Collision sensor, Color sensor
+- Mainly depend on three Ultrasonic
+sensors
+- The motherboard supply their power
+Uniformly
+- Bluetooth module can send data from motherboard to computer
+
+## Algorithm
+
+#### Exploration Strategy
+
+Set a hyperparameter TOLERANCE representing the minimum distance to the wall:
+
+    if distanceForward < TOLERANCE (the robot’s head is too close to wall)
+        Move(BACKWARD)
+        If distanceLeft > distanceRight (the robot’s right is too close to wall)
+            Move(LEFT)
+        Else
+            Move(RIGHT)
+
+
